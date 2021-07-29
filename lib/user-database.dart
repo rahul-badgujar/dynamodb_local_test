@@ -8,7 +8,7 @@ class UserDatabase {
   UserDatabase._();
   static final instance = UserDatabase._();
 
-  static final baseUrl = 'http://localhost:8000';
+  static final baseUrl = 'http://prod.alpine.red:8000';
 
   /// header parameters which are common in all http requests
   final commonHeaderParams = {
