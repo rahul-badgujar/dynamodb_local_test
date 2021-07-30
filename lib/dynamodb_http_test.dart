@@ -1,4 +1,5 @@
 import 'package:alfred/alfred.dart';
+import 'package:dynamodb_http_test/api/api.dart';
 import 'package:dynamodb_http_test/database/key-value-database.dart';
 
 Future<void> run() async {
@@ -7,16 +8,12 @@ Future<void> run() async {
   // route to get details of user
   app.get('user/:uid', (req, res) async {
     try {
-      final uid = req.params['uid'];
+      final rawUid = req.params['uid'];
+      final uid = int.tryParse(rawUid ?? '');
       if (uid == null) {
         throw Exception('uid not defined.');
       }
-      final userData = await KeyValueDatabase.getValue(
-        tableName: 'users',
-        key: {
-          'uid': {'N': '$uid'}
-        },
-      );
+      final userData = await Api.instance.getUserData(uid: uid);
       return {
         'status': 'success',
         'data': userData,
@@ -34,12 +31,7 @@ Future<void> run() async {
         throw Exception('uid not defined.');
       }
       final data = (body['data'] ?? {}) as Map;
-      await KeyValueDatabase.putValue(
-          tableName: 'users',
-          key: {
-            'uid': {'N': '$uid'}
-          },
-          value: data);
+      await Api.instance.updateUserData(uid: uid, data: data);
       return {
         'status': 'success',
         'data': {'uid': uid}
