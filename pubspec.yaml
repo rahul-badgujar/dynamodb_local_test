@@ -12,4 +12,5 @@ dev_dependencies:
   test: ^1.16.0
 dependencies:
   alfred: ^0.1.4+5
+  crypto: ^3.0.1
   http: ^0.13.3
