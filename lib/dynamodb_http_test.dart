@@ -1,10 +1,11 @@
 import 'package:alfred/alfred.dart';
 import 'package:dynamodb_http_test/api/api.dart';
-import 'package:dynamodb_http_test/database/key-value-database.dart';
 
 Future<void> run() async {
   final app = Alfred();
+
   app.all('example', (req, res) => 'Welcome to DynamoDB Test');
+
   // route to get details of user
   app.get('user/:uid', (req, res) async {
     try {
@@ -22,6 +23,7 @@ Future<void> run() async {
       return {'status': 'failure', 'error': e.toString()};
     }
   });
+
   // route to add user data
   app.post('updateUser', (req, res) async {
     try {
@@ -40,5 +42,8 @@ Future<void> run() async {
       return {'status': 'failure', 'error': e.toString()};
     }
   });
+
+  // route for email-password login
+
   await app.listen(3003);
 }
