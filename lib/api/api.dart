@@ -94,7 +94,7 @@ class Api {
         'uid': {'N': uid.toString()},
         'email': {'S': email},
         'password': {'S': password},
-        'security-token': {'S': defaultLoginDtm.toString()},
+        'securityToken': {'S': defaultLoginDtm.toString()},
         'json': {'M': data},
       },
     };
@@ -117,7 +117,10 @@ class Api {
     }
   }
 
-  Future<bool> validateCredentials(
+  /// Validates [email,password] credentials and returns [uid]
+  ///
+  /// In case of credential mismatch, returns null
+  Future<int?> validateCredentials(
       {required String email, required String password}) async {
     final bodyJson = {
       'TableName': 'users',
@@ -143,10 +146,51 @@ class Api {
       final responseBody = response.body;
       final responseBodyJson = jsonDecode(responseBody);
       final items = (responseBodyJson['Items'] ?? []) as List;
-      return items.isNotEmpty;
+      // if no user matches for given credentials, return null
+      if (items.isEmpty) return null;
+      final parsedItem = parseItemResponse(items.first);
+      final uidString = parsedItem['uid'];
+      final uid = int.tryParse(uidString);
+      return uid;
     }
     throw Exception(
       'Failed to get user data [email: $email], StatusCode: ${response.statusCode}',
     );
+  }
+
+  Future<void> setSecurityTokenForUid(
+      {required int uid, required String token}) async {
+    final bodyJson = {
+      'TableName': 'users',
+      'Key': {
+        'uid': {'N': uid.toString()}
+      },
+      'UpdateExpression': 'set securityToken = :token',
+      'ExpressionAttributeValues': {
+        ':token': {'S': token},
+      },
+    };
+    // define headers for http request
+    final headers = <String, String>{
+      'X-Amz-Target': 'DynamoDB_20120810.UpdateItem',
+    };
+    // add default header values
+    headers.addAll(commonHeaderParams);
+
+    final response = await http.post(
+      Uri.parse('$baseUrl'),
+      body: jsonEncode(bodyJson),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Failed to update security token for given uid [uid: $uid], StatusCode: ${response.statusCode}',
+      );
+    }
+  }
+
+  Future<void> updateSecurityTokenForUid({required int uid}) async {
+    final token = DateTime.now().toString();
+    await setSecurityTokenForUid(uid: uid, token: token);
   }
 }
