@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 class Api {
   Api._();
   static final instance = Api._();
+  static final defaultLoginDtm = DateTime(1960);
 
   static final baseUrl = 'http://dynamodb.alpine.red:8000';
 
@@ -93,7 +94,7 @@ class Api {
         'uid': {'N': uid.toString()},
         'email': {'S': email},
         'password': {'S': password},
-        'security-token': {'BOOL': 'false'},
+        'security-token': {'S': defaultLoginDtm.toString()},
         'json': {'M': data},
       },
     };
