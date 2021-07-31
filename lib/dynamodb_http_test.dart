@@ -1,5 +1,7 @@
 import 'package:alfred/alfred.dart';
+import 'package:crypto/crypto.dart';
 import 'package:dynamodb_http_test/api/api.dart';
+import 'package:dynamodb_http_test/utils/hashing/hashing.dart';
 
 Future<void> run() async {
   final app = Alfred();
@@ -29,6 +31,7 @@ Future<void> run() async {
     try {
       final body = await req.bodyAsJsonMap;
       final uid = body['uid'];
+      // TODO: handle case when uid is already alloted
       if (uid == null) {
         throw Exception('uid not defined.');
       }
@@ -36,11 +39,13 @@ Future<void> run() async {
       if (email == null) {
         throw Exception('email not defined');
       }
-      final password = body['password'];
+      var password = body['password'];
       if (password == null) {
         throw Exception('password not defined.');
       }
       final data = (body['data'] ?? {}) as Map;
+      // hash password using md5
+      password = convertToMd5(password);
       await Api.instance
           .addUserData(uid: uid, email: email, password: password, data: data);
       return {
