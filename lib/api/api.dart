@@ -49,7 +49,7 @@ class Api {
   }
 
   /// Updates [data] for user having [uid]
-  Future<void> updateUserData({required int uid, required Map data}) async {
+  Future<void> addUserData({required int uid, required Map data}) async {
     final bodyJson = {
       'TableName': 'users',
       'Item': <dynamic, dynamic>{

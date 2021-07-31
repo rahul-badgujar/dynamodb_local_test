@@ -25,7 +25,7 @@ Future<void> run() async {
   });
 
   // route to add user data
-  app.post('updateUser', (req, res) async {
+  app.post('addUser', (req, res) async {
     try {
       final body = await req.bodyAsJsonMap;
       final uid = body['uid'];
@@ -33,7 +33,7 @@ Future<void> run() async {
         throw Exception('uid not defined.');
       }
       final data = (body['data'] ?? {}) as Map;
-      await Api.instance.updateUserData(uid: uid, data: data);
+      await Api.instance.addUserData(uid: uid, data: data);
       return {
         'status': 'success',
         'data': {'uid': uid}
