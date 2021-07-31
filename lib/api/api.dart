@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 class Api {
   Api._();
   static final instance = Api._();
+
+  /// default dtm to be alloted for security token.
   static final defaultLoginDtm = DateTime(1960);
 
   static final baseUrl = 'http://dynamodb.alpine.red:8000';
@@ -20,7 +22,7 @@ class Api {
         'AWS4-HMAC-SHA256 Credential=<Credential>, SignedHeaders=<Headers>, Signature=<Signature>',
   };
 
-  /// Returns data of user having [uid]
+  /// Returns data of user having [uid] if exits, otherwise returns 'null'
   Future<Map?> getUserDataWithUid({required int uid}) async {
     final bodyJson = {
       'TableName': 'users',
@@ -51,6 +53,7 @@ class Api {
     );
   }
 
+  /// Return the data of user having [email] if such user exits, otherwise returns 'null'
   Future<Map?> getUserDataWithEmail({required String email}) async {
     final bodyJson = {
       'TableName': 'users',
@@ -75,6 +78,7 @@ class Api {
       final responseBody = response.body;
       final responseBodyJson = jsonDecode(responseBody);
       final items = (responseBodyJson['Items'] ?? []) as List;
+      // if the response data list is empty, return null, otherwise return the user data parsed
       return items.isEmpty ? null : parseItemResponse(items.first);
     }
     throw Exception(
@@ -158,6 +162,7 @@ class Api {
     );
   }
 
+  /// Sets security [token] for user with [uid]
   Future<void> setSecurityTokenForUid(
       {required int uid, required String token}) async {
     final bodyJson = {
@@ -189,8 +194,32 @@ class Api {
     }
   }
 
+  /// Updates security token for user with [uid] with the current dtm
   Future<void> updateSecurityTokenForUid({required int uid}) async {
     final token = DateTime.now().toString();
     await setSecurityTokenForUid(uid: uid, token: token);
+  }
+
+  /// Reset security token for user with [uid], resets token to default [defaultLoginDtm]
+  Future<void> resetSecurityTokenForUid({required int uid}) async {
+    final token = defaultLoginDtm.toString();
+    await setSecurityTokenForUid(uid: uid, token: token);
+  }
+
+  /// Returns 'true' if security token for user with [uid] is up and valid
+  Future<bool> validateSecurityToken({required int uid}) async {
+    final userData = await getUserDataWithUid(uid: uid);
+    if (userData == null) {
+      throw Exception('No user exists for given uid [uid:$uid]');
+    }
+    final currentSecurityToken = userData['securityToken'];
+    // this is last login dtm token
+    final tokenDtm = DateTime.tryParse(currentSecurityToken) ?? defaultLoginDtm;
+    final currentDtm = DateTime.now();
+    // substracting 30 days period from current dtm, this is the least dtm till which token will be valid
+    final leastValidDtm = currentDtm.subtract(Duration(days: 30));
+    // if token dtm is after the least valid dtm, then token is valid
+    final isTokenValid = tokenDtm.isAfter(leastValidDtm);
+    return isTokenValid;
   }
 }

@@ -1,5 +1,4 @@
 import 'package:alfred/alfred.dart';
-import 'package:crypto/crypto.dart';
 import 'package:dynamodb_http_test/api/api.dart';
 import 'package:dynamodb_http_test/utils/hashing/hashing.dart';
 
@@ -8,7 +7,7 @@ Future<void> run() async {
 
   app.all('example', (req, res) => 'Welcome to DynamoDB Test');
 
-  // route to get details of user
+  // route to get details of user from uid
   app.get('user/:uid', (req, res) async {
     try {
       final rawUid = req.params['uid'];
@@ -29,6 +28,7 @@ Future<void> run() async {
     }
   });
 
+  // route to get user details from email
   app.get('userFromEmail/:email', (req, res) async {
     try {
       final email = req.params['email'];
@@ -48,7 +48,7 @@ Future<void> run() async {
     }
   });
 
-  // route to add user data
+  // route to new add user data
   app.post('addUser', (req, res) async {
     try {
       final body = await req.bodyAsJsonMap;
@@ -79,6 +79,7 @@ Future<void> run() async {
     }
   });
 
+  // route to login with email and password, returns uid of logged in user as response
   app.post('loginWithEmailPassword', (req, res) async {
     try {
       final body = await req.bodyAsJsonMap;
