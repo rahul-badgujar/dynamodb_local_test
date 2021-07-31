@@ -32,8 +32,17 @@ Future<void> run() async {
       if (uid == null) {
         throw Exception('uid not defined.');
       }
+      final email = body['email'];
+      if (email == null) {
+        throw Exception('email not defined');
+      }
+      final password = body['password'];
+      if (password == null) {
+        throw Exception('password not defined.');
+      }
       final data = (body['data'] ?? {}) as Map;
-      await Api.instance.addUserData(uid: uid, data: data);
+      await Api.instance
+          .addUserData(uid: uid, email: email, password: password, data: data);
       return {
         'status': 'success',
         'data': {'uid': uid}

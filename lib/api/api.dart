@@ -49,12 +49,18 @@ class Api {
   }
 
   /// Updates [data] for user having [uid]
-  Future<void> addUserData({required int uid, required Map data}) async {
+  Future<void> addUserData(
+      {required int uid,
+      required String email,
+      required String password,
+      required Map data}) async {
     final bodyJson = {
       'TableName': 'users',
       'Item': <dynamic, dynamic>{
         'uid': {'N': uid.toString()},
-        'email': {'S': data['email']},
+        'email': {'S': email},
+        'password': {'S': password},
+        'security-token': {'BOOL': 'false'},
         'json': {'M': data},
       },
     };
