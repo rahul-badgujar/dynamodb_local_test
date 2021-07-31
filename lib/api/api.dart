@@ -56,7 +56,7 @@ class Api {
       'ExpressionAttributeValues': {
         ':email': {'S': email},
       },
-      'FilterExpression': 'contains (email, :email)',
+      'FilterExpression': 'email = :email',
     };
     // define headers for http request
     final headers = <String, String>{
@@ -116,7 +116,36 @@ class Api {
     }
   }
 
-  bool validateCredentials({required String email, required String password}) {
-    return false;
+  Future<bool> validateCredentials(
+      {required String email, required String password}) async {
+    final bodyJson = {
+      'TableName': 'users',
+      'ExpressionAttributeValues': {
+        ':email': {'S': email},
+        ':password': {'S': password},
+      },
+      'FilterExpression': 'email = :email and password = :password',
+    };
+    // define headers for http request
+    final headers = <String, String>{
+      'X-Amz-Target': 'DynamoDB_20120810.Scan',
+    };
+    // add default header values
+    headers.addAll(commonHeaderParams);
+
+    final response = await http.post(
+      Uri.parse('$baseUrl'),
+      body: jsonEncode(bodyJson),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      final responseBody = response.body;
+      final responseBodyJson = jsonDecode(responseBody);
+      final items = (responseBodyJson['Items'] ?? []) as List;
+      return items.isNotEmpty;
+    }
+    throw Exception(
+      'Failed to get user data [email: $email], StatusCode: ${response.statusCode}',
+    );
   }
 }

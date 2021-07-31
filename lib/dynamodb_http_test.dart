@@ -92,7 +92,11 @@ Future<void> run() async {
       }
       // hash password using md5
       password = convertToMd5(password);
-
+      final validCredentials = await Api.instance
+          .validateCredentials(email: email, password: password);
+      if (validCredentials == false) {
+        throw Exception('email and password mismatch');
+      }
       return {
         'status': 'success',
       };
