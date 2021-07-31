@@ -16,7 +16,29 @@ Future<void> run() async {
       if (uid == null) {
         throw Exception('uid not defined.');
       }
-      final userData = await Api.instance.getUserData(uid: uid);
+      final userData = await Api.instance.getUserDataWithUid(uid: uid);
+      if (userData == null) {
+        throw Exception('No user found for given uid [email:$uid]');
+      }
+      return {
+        'status': 'success',
+        'data': userData,
+      };
+    } on Exception catch (e) {
+      return {'status': 'failure', 'error': e.toString()};
+    }
+  });
+
+  app.get('userFromEmail/:email', (req, res) async {
+    try {
+      final email = req.params['email'];
+      if (email == null) {
+        throw Exception('email not defined.');
+      }
+      final userData = await Api.instance.getUserDataWithEmail(email: email);
+      if (userData == null) {
+        throw Exception('No user found for given email [email:$email]');
+      }
       return {
         'status': 'success',
         'data': userData,
@@ -78,8 +100,6 @@ Future<void> run() async {
       return {'status': 'failure', 'error': e.toString()};
     }
   });
-
-  // route for email-password login
 
   await app.listen(3003);
 }

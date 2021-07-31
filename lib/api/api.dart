@@ -20,7 +20,7 @@ class Api {
   };
 
   /// Returns data of user having [uid]
-  Future<Map> getUserData({required int uid}) async {
+  Future<Map?> getUserDataWithUid({required int uid}) async {
     final bodyJson = {
       'TableName': 'users',
       'Key': {
@@ -42,10 +42,42 @@ class Api {
     if (response.statusCode == 200) {
       final responseBody = response.body;
       final responseBodyJson = jsonDecode(responseBody);
-      return parseItemResponse(responseBodyJson['Item']);
+      final item = responseBodyJson['Item'];
+      return item == null ? null : parseItemResponse(item);
     }
     throw Exception(
       'Failed to get user data [uid: $uid], StatusCode: ${response.statusCode}',
+    );
+  }
+
+  Future<Map?> getUserDataWithEmail({required String email}) async {
+    final bodyJson = {
+      'TableName': 'users',
+      'ExpressionAttributeValues': {
+        ':email': {'S': email},
+      },
+      'FilterExpression': 'contains (email, :email)',
+    };
+    // define headers for http request
+    final headers = <String, String>{
+      'X-Amz-Target': 'DynamoDB_20120810.Scan',
+    };
+    // add default header values
+    headers.addAll(commonHeaderParams);
+
+    final response = await http.post(
+      Uri.parse('$baseUrl'),
+      body: jsonEncode(bodyJson),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      final responseBody = response.body;
+      final responseBodyJson = jsonDecode(responseBody);
+      final items = (responseBodyJson['Items'] ?? []) as List;
+      return items.isEmpty ? null : parseItemResponse(items.first);
+    }
+    throw Exception(
+      'Failed to get user data [email: $email], StatusCode: ${response.statusCode}',
     );
   }
 
