@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dynamodb_http_test/utils/response-parsing/response-parsing.dart';
 import 'package:http/http.dart' as http;
 
 /// This is a demo database which stores uid and email of user
@@ -41,7 +42,7 @@ class Api {
     if (response.statusCode == 200) {
       final responseBody = response.body;
       final responseBodyJson = jsonDecode(responseBody);
-      return responseBodyJson;
+      return parseItemResponse(responseBodyJson['Item']);
     }
     throw Exception(
       'Failed to get user data [uid: $uid], StatusCode: ${response.statusCode}',
@@ -81,5 +82,9 @@ class Api {
         'Failed to update user data [uid: $uid], StatusCode: ${response.statusCode}',
       );
     }
+  }
+
+  bool validateCredentials({required String email, required String password}) {
+    return false;
   }
 }

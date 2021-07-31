@@ -57,6 +57,28 @@ Future<void> run() async {
     }
   });
 
+  app.post('loginWithEmailPassword', (req, res) async {
+    try {
+      final body = await req.bodyAsJsonMap;
+      final email = body['email'];
+      if (email == null) {
+        throw Exception('email not defined');
+      }
+      var password = body['password'];
+      if (password == null) {
+        throw Exception('password not defined.');
+      }
+      // hash password using md5
+      password = convertToMd5(password);
+
+      return {
+        'status': 'success',
+      };
+    } on Exception catch (e) {
+      return {'status': 'failure', 'error': e.toString()};
+    }
+  });
+
   // route for email-password login
 
   await app.listen(3003);
